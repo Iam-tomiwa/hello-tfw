@@ -1,10 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion, PanInfo } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Message } from "@/lib/types";
 import MessageCard from "./MessageCard";
+
+// Swiper imports
+import { EffectCards, Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperType } from "swiper";
+
+// Swiper styles
+import "swiper/css";
+import "swiper/css/effect-cards";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
 
 // ─── Countdown delete button ─────────────────────────────────────────────────
 const RADIUS = 15;
@@ -39,7 +50,10 @@ function CountdownDelete({
 
   return (
     <motion.button
-      onClick={onDelete}
+      onClick={(e) => {
+        e.stopPropagation();
+        onDelete();
+      }}
       className="relative flex items-center justify-center"
       style={{ width: 36, height: 36 }}
       whileHover={{ scale: 1.1 }}
@@ -47,7 +61,6 @@ function CountdownDelete({
       aria-label="Delete message"
       title={`Delete (${Math.ceil(remaining / 1000)}s)`}
     >
-      {/* Ring */}
       <svg
         width="36"
         height="36"
@@ -56,7 +69,6 @@ function CountdownDelete({
         style={{ transform: "rotate(-90deg)" }}
         aria-hidden="true"
       >
-        {/* Track */}
         <circle
           cx="18"
           cy="18"
@@ -65,7 +77,6 @@ function CountdownDelete({
           stroke="rgba(194,88,122,0.18)"
           strokeWidth="2.5"
         />
-        {/* Progress */}
         <circle
           cx="18"
           cy="18"
@@ -78,7 +89,6 @@ function CountdownDelete({
           strokeDashoffset={offset}
         />
       </svg>
-      {/* Icon */}
       <div
         className="relative flex items-center justify-center w-7 h-7 rounded-full"
         style={{ background: "rgba(255,250,248,0.92)" }}
@@ -89,11 +99,14 @@ function CountdownDelete({
   );
 }
 
-// ─── Plain delete button (no countdown, for "her" role) ──────────────────────
+// ─── Plain delete button (no countdown) ──────────────────────────────────────
 function PlainDelete({ onDelete }: { onDelete: () => void }) {
   return (
     <motion.button
-      onClick={onDelete}
+      onClick={(e) => {
+        e.stopPropagation();
+        onDelete();
+      }}
       className="flex items-center justify-center w-8 h-8 rounded-full"
       style={{
         background: "rgba(255,250,248,0.92)",
@@ -118,7 +131,7 @@ function ConfirmDeleteModal({
 }) {
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       style={{
         background: "rgba(45,27,46,0.55)",
         backdropFilter: "blur(10px)",
@@ -183,8 +196,6 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-type Dir = -1 | 1;
-
 export default function CardSwipeStack({
   messages,
   canDeleteAll,
@@ -193,222 +204,135 @@ export default function CardSwipeStack({
 }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [direction, setDirection] = useState<Dir>(-1);
+  const swiperRef = useRef<SwiperType | null>(null);
 
   const total = messages.length;
 
-  // Keep currentIndex in bounds when messages list changes (e.g. after delete)
-  const safeIndex = total > 0 ? Math.min(currentIndex, total - 1) : 0;
-
-  function advance(dir: Dir) {
-    setDirection(dir);
-    setCurrentIndex(
-      (i) => (Math.min(i, total - 1) + (dir === -1 ? 1 : -1) + total) % total,
-    );
-  }
-
-  function handleDragEnd(_: unknown, info: PanInfo) {
-    const { offset, velocity } = info;
-    // swipe left (offset is negative) -> advance to next card
-    if (offset.x < -50 || velocity.x < -200) advance(-1);
-    // swipe right (offset is positive) -> advance to previous card
-    else if (offset.x > 50 || velocity.x > 200) advance(1);
-  }
-
-  function msgAt(offset: number) {
-    return messages[(safeIndex + offset + total * 10) % total];
-  }
-
-  function colorIdxAt(offset: number) {
-    return (safeIndex + offset + total * 10) % total;
-  }
-
   if (total === 0) return null;
-
-  const topMsg = messages[safeIndex];
-  const addedAt = newMsgTimestamps[topMsg.id];
-  const withinWindow =
-    // eslint-disable-next-line react-hooks/purity
-    addedAt !== undefined && Date.now() - addedAt < WINDOW_MS;
-
-  // Show delete button on top card if:
-  //  - she can delete any message (HER_PASSCODE), OR
-  //  - message was just added and still within 10s window
-  const showDelete = canDeleteAll || withinWindow;
-  const showCountdown = !canDeleteAll && withinWindow;
 
   const showDots = total <= 9;
 
-  const variants = {
-    initial: (dir: number) => ({
-      x: dir * 50,
-      opacity: 0,
-      scale: 0.94,
-    }),
-    animate: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      rotate: 0,
-    },
-    exit: (dir: number) => ({
-      x: dir * 520,
-      opacity: 0,
-      rotate: dir * 18,
-      transition: {
-        duration: 0.3,
-        ease: "easeIn" as const,
-      },
-    }),
-  };
-
   return (
-    <div className="flex flex-col items-center gap-8 w-full">
-      {/* Stack */}
-      <div className="relative w-full" style={{ maxWidth: 360, height: 480 }}>
-        {/* 3rd card — back */}
-        {total > 2 && (
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              transform: "rotate(-2deg) scale(0.88) translateY(20px)",
-              transformOrigin: "bottom center",
-              zIndex: 0,
-            }}
-          >
-            <MessageCard
-              message={msgAt(2)}
-              colorIndex={colorIdxAt(2)}
-              className="h-full"
-            />
-          </div>
-        )}
+    <div className="flex flex-col items-center gap-6 w-full">
+      {/* Container with overflow visible for swiper shadows/stack */}
+      <div className="relative w-full max-w-[90vw] sm:max-w-[480px] h-[380px] sm:h-[480px]">
+        <Swiper
+          effect="cards"
+          grabCursor={true}
+          modules={[EffectCards, Navigation, Pagination]}
+          className="h-full w-full custom-swiper"
+          onSwiper={(swiper) => (swiperRef.current = swiper)}
+          onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
+          cardsEffect={{
+            perSlideOffset: 12,
+            perSlideRotate: 3,
+            rotate: true,
+            slideShadows: false,
+          }}
+        >
+          {messages.map((msg, index) => {
+            const addedAt = newMsgTimestamps[msg.id];
+            const withinWindow =
+              // eslint-disable-next-line react-hooks/purity
+              addedAt !== undefined && Date.now() - addedAt < WINDOW_MS;
+            const showDelete = canDeleteAll || withinWindow;
+            const showCountdown = !canDeleteAll && withinWindow;
 
-        {/* 2nd card — middle */}
-        {total > 1 && (
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              transform: "rotate(2deg) scale(0.94) translateY(10px)",
-              transformOrigin: "bottom center",
-              zIndex: 1,
-            }}
-          >
-            <MessageCard
-              message={msgAt(1)}
-              colorIndex={colorIdxAt(1)}
-              className="h-full"
-            />
-          </div>
-        )}
+            return (
+              <SwiperSlide
+                key={msg.id}
+                className="rounded-2xl border border-primary overflow-hidden"
+              >
+                <div className="relative h-full w-full">
+                  <MessageCard
+                    message={msg}
+                    colorIndex={index}
+                    className="h-full"
+                  />
 
-        {/* Top card — draggable */}
-        <AnimatePresence initial={false} custom={direction}>
-          <motion.div
-            key={safeIndex}
-            custom={direction}
-            className="absolute inset-0 touch-none cursor-grab active:cursor-grabbing"
-            style={{ zIndex: 2 }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.6}
-            onDragEnd={handleDragEnd}
-            variants={variants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
-          >
-            <MessageCard
-              message={topMsg}
-              colorIndex={safeIndex}
-              className="h-full"
-            />
-
-            {/* Delete button — stop pointer events from triggering drag */}
-            <AnimatePresence>
-              {showDelete && (
-                <motion.div
-                  className="absolute top-3 right-3 z-10"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  {showCountdown ? (
-                    <CountdownDelete
-                      key={topMsg.id}
-                      addedAt={addedAt!}
-                      onDelete={() => setPendingDeleteId(topMsg.id)}
-                    />
-                  ) : (
-                    <PlainDelete
-                      onDelete={() => setPendingDeleteId(topMsg.id)}
-                    />
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </AnimatePresence>
+                  {/* Delete button overlay */}
+                  <AnimatePresence>
+                    {showDelete && index === currentIndex && (
+                      <motion.div
+                        className="absolute top-3 right-3 z-10"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {showCountdown ? (
+                          <CountdownDelete
+                            addedAt={addedAt!}
+                            onDelete={() => setPendingDeleteId(msg.id)}
+                          />
+                        ) : (
+                          <PlainDelete
+                            onDelete={() => setPendingDeleteId(msg.id)}
+                          />
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </SwiperSlide>
+            );
+          })}
+        </Swiper>
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center gap-5">
-        <motion.button
-          onClick={() => advance(1)}
-          className="w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ background: "rgba(194,88,122,0.1)", color: "#c2587a" }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.88 }}
-          aria-label="Previous"
-          disabled={total <= 1}
-        >
-          <ChevronLeft size={20} />
-        </motion.button>
-
-        {showDots ? (
-          <div className="flex items-center gap-1.5">
-            {messages.map((_, i) => (
-              <motion.button
-                key={i}
-                onClick={() => {
-                  setDirection(i >= safeIndex ? -1 : 1);
-                  setCurrentIndex(i);
-                }}
-                aria-label={`Go to message ${i + 1}`}
-                className="rounded-full"
-                animate={{
-                  width: i === safeIndex ? 22 : 8,
-                  opacity: i === safeIndex ? 1 : 0.4,
-                  background: i === safeIndex ? "#c2587a" : "#c4a0b8",
-                }}
-                style={{ height: 8 }}
-                transition={{ duration: 0.2 }}
-              />
-            ))}
-          </div>
-        ) : (
-          <span
-            className="font-sans text-sm tabular-nums"
-            style={{ color: "#c4a0b8", minWidth: 52, textAlign: "center" }}
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex items-center gap-8">
+          <motion.button
+            onClick={() => swiperRef.current?.slidePrev()}
+            className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
+            style={{ background: "rgba(194,88,122,0.1)", color: "#c2587a" }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.88 }}
+            aria-label="Previous"
+            disabled={currentIndex === 0}
           >
-            {safeIndex + 1} / {total}
-          </span>
-        )}
+            <ChevronLeft size={24} />
+          </motion.button>
 
-        <motion.button
-          onClick={() => advance(-1)}
-          className="w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ background: "rgba(194,88,122,0.1)", color: "#c2587a" }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.88 }}
-          aria-label="Next"
-          disabled={total <= 1}
-        >
-          <ChevronRight size={20} />
-        </motion.button>
+          {showDots ? (
+            <div className="flex items-center gap-2">
+              {messages.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => swiperRef.current?.slideTo(i)}
+                  className="rounded-full transition-all duration-300"
+                  style={{
+                    width: i === currentIndex ? 24 : 8,
+                    height: 8,
+                    background: i === currentIndex ? "#c2587a" : "#c4a0b8",
+                    opacity: i === currentIndex ? 1 : 0.4,
+                  }}
+                  aria-label={`Go to message ${i + 1}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <span
+              className="font-sans text-sm tabular-nums font-medium"
+              style={{ color: "#c4a0b8", minWidth: 60, textAlign: "center" }}
+            >
+              {currentIndex + 1} / {total}
+            </span>
+          )}
+
+          <motion.button
+            onClick={() => swiperRef.current?.slideNext()}
+            className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
+            style={{ background: "rgba(194,88,122,0.1)", color: "#c2587a" }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.88 }}
+            aria-label="Next"
+            disabled={currentIndex === total - 1}
+          >
+            <ChevronRight size={24} />
+          </motion.button>
+        </div>
       </div>
 
       {/* Confirmation modal */}
@@ -423,6 +347,15 @@ export default function CardSwipeStack({
           />
         )}
       </AnimatePresence>
+
+      <style jsx global>{`
+        .custom-swiper .swiper-slide-shadow {
+          background: rgba(45, 27, 46, 0.05) !important;
+        }
+        .custom-swiper {
+          overflow: visible !important;
+        }
+      `}</style>
     </div>
   );
 }
