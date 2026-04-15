@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
 export async function GET() {
@@ -50,6 +51,10 @@ export async function POST(request: Request) {
       .single()
 
     if (error) throw error
+    
+    // Clear the home page cache so the new message shows up after refresh
+    revalidatePath('/')
+    
     return NextResponse.json(data, { status: 201 })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'

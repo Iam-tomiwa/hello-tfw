@@ -18,3 +18,5 @@ export default async function Home() {
 
   return <MainClient initialMessages={messages} />
 }
+
+export const dynamic = 'force-dynamic'

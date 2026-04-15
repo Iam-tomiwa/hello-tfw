@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
 export async function DELETE(
@@ -38,7 +39,10 @@ export async function DELETE(
 
     const { error } = await supabase.from('messages').delete().eq('id', id)
     if (error) throw error
-
+    
+    // Clear the home page cache so the deletion is reflected after refresh
+    revalidatePath('/')
+    
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
