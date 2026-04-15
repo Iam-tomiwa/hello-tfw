@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { Plus, Music, Music2 } from 'lucide-react'
 import WelcomeAnimation from './WelcomeAnimation'
 import MessageGrid from './MessageGrid'
 import PasscodeModal from './PasscodeModal'
@@ -28,6 +28,7 @@ export default function MainClient({ initialMessages }: Props) {
   // id → client timestamp of when the message was added this session
   const [newMsgTimestamps, setNewMsgTimestamps] = useState<Record<string, number>>({})
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false)
 
   // Restore session auth on mount
   useEffect(() => {
@@ -101,7 +102,27 @@ export default function MainClient({ initialMessages }: Props) {
             your comfort corner 🌸
           </p>
         </div>
-        <span className="text-2xl select-none" style={{ color: '#edadc0' }}>♡</span>
+        <motion.button
+          onClick={() => setIsMusicPlaying(!isMusicPlaying)}
+          className="p-2 rounded-full transition-colors relative"
+          style={{ color: isMusicPlaying ? '#c2587a' : '#edadc0' }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label={isMusicPlaying ? "Pause music" : "Play music"}
+        >
+          {isMusicPlaying ? (
+            <Music2 size={24} className="animate-pulse" />
+          ) : (
+            <Music size={24} />
+          )}
+          {isMusicPlaying && (
+            <motion.span 
+              className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#c2587a]"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+            />
+          )}
+        </motion.button>
       </header>
 
       {/* Main content */}
@@ -130,7 +151,7 @@ export default function MainClient({ initialMessages }: Props) {
         />
       </main>
 
-      <MusicPlayer />
+      <MusicPlayer isPlaying={isMusicPlaying} />
 
       {/* Floating add button */}
       <motion.button
