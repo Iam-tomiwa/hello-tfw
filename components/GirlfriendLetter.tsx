@@ -49,7 +49,7 @@ const LETTER: Line[] = [
   },
   {
     kind: "shoutout",
-    text: "A shout-out to a woman so fine and sweet, like a well-aged wine 🌚.",
+    text: "A shout-out to a woman so fine and sweet, like a well-aged wine 🙂‍↔️.",
   },
   {
     kind: "shoutout",
