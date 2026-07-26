@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import AppHeader from "./AppHeader";
 import MusicPlayer from "./MusicPlayer";
 import WelcomeAnimation from "./WelcomeAnimation";
+import { MusicContext, type MusicControls } from "./MusicContext";
 
 /**
  * Chrome shared by every route: the welcome preloader, the sticky header and
@@ -19,9 +20,15 @@ export default function AppShell({
 
   const handleWelcomeComplete = useCallback(() => setShowWelcome(false), []);
   const toggleMusic = useCallback(() => setIsMusicPlaying((p) => !p), []);
+  const playMusic = useCallback(() => setIsMusicPlaying(true), []);
+
+  const music = useMemo<MusicControls>(
+    () => ({ isPlaying: isMusicPlaying, play: playMusic, toggle: toggleMusic }),
+    [isMusicPlaying, playMusic, toggleMusic],
+  );
 
   return (
-    <>
+    <MusicContext.Provider value={music}>
       <AnimatePresence>
         {showWelcome && <WelcomeAnimation onComplete={handleWelcomeComplete} />}
       </AnimatePresence>
@@ -31,6 +38,6 @@ export default function AppShell({
       {children}
 
       <MusicPlayer isPlaying={isMusicPlaying} />
-    </>
+    </MusicContext.Provider>
   );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { readMessagesBackup, saveMessagesBackup } from '@/lib/messagesBackup'
 
 export async function GET() {
   try {
@@ -11,8 +12,20 @@ export async function GET() {
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    return NextResponse.json(data)
+
+    const messages = data ?? []
+    await saveMessagesBackup(messages)
+    return NextResponse.json(messages)
   } catch (err: unknown) {
+    // Supabase unreachable — serve the last snapshot rather than failing
+    const backup = await readMessagesBackup()
+    if (backup) {
+      return NextResponse.json(
+        [...backup].sort((a, b) => b.created_at.localeCompare(a.created_at)),
+        { headers: { 'X-Data-Source': 'backup' } }
+      )
+    }
+
     const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })
   }

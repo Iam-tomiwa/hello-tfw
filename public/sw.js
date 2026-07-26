@@ -1,4 +1,4 @@
-const CACHE = 'tfw-v1'
+const CACHE = 'tfw-v2'
 
 // Assets to precache on install
 const PRECACHE = ['/']

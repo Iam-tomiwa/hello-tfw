@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Petals from "./Petals";
+import PhotoPops from "./PhotoPops";
+import PhotoFrame from "./PhotoFrame";
+import PhotoPreloader from "./PhotoPreloader";
+import { useMusic } from "./MusicContext";
+import type { Photo } from "@/lib/types";
 
 type LineKind = "greeting" | "para" | "shoutout" | "finale";
 
@@ -79,7 +84,12 @@ function toGraphemes(text: string): string[] {
   return Array.from(text);
 }
 
-export default function GirlfriendLetter() {
+interface Props {
+  /** Pictures from public/our-pictures. Empty means petals only. */
+  photos: Photo[];
+}
+
+export default function GirlfriendLetter({ photos }: Props) {
   const [phase, setPhase] = useState<"sealed" | "opening" | "reading">(
     "sealed",
   );
@@ -89,17 +99,19 @@ export default function GirlfriendLetter() {
 
   const reduceMotion = useReducedMotion();
   const activeRef = useRef<HTMLDivElement | null>(null);
+  const { play: playMusic } = useMusic();
 
   const graphemes = useMemo(() => LETTER.map((l) => toGraphemes(l.text)), []);
   const finished = lineIndex >= LETTER.length;
 
   const handleOpen = useCallback(() => {
     if (phase !== "sealed") return;
+    // This click is the user gesture browsers require before audio may start
+    playMusic();
     setPhase("opening");
-    const t1 = setTimeout(() => setFlapBehind(true), 380);
-    const t2 = setTimeout(() => setPhase("reading"), 1500);
-    return () => [t1, t2].forEach(clearTimeout);
-  }, [phase]);
+    setTimeout(() => setFlapBehind(true), 380);
+    setTimeout(() => setPhase("reading"), 1500);
+  }, [phase, playMusic]);
 
   // Type out the current line one grapheme at a time, then pause and advance.
   useEffect(() => {
@@ -143,6 +155,20 @@ export default function GirlfriendLetter() {
 
   const opening = phase !== "sealed";
 
+  // One more picture every few lines, spread evenly across the whole letter.
+  const photosBy = useCallback(
+    (line: number) =>
+      line < 0
+        ? 0
+        : Math.min(
+            photos.length,
+            Math.ceil(((line + 1) / LETTER.length) * photos.length),
+          ),
+    [photos.length],
+  );
+
+  const photosRevealed = phase === "reading" ? photosBy(lineIndex) : 0;
+
   return (
     <div className="relative flex-1 w-full overflow-x-hidden font-sans flex flex-col">
       {/* Fixed so the wash sits behind the layout header too, with no seam */}
@@ -155,6 +181,8 @@ export default function GirlfriendLetter() {
       />
 
       <Petals />
+      <PhotoPreloader photos={photos} />
+      <PhotoPops photos={photos} revealed={photosRevealed} />
 
       {/* The whole letter, always available to screen readers */}
       <p className="sr-only">{LETTER.map((l) => l.text).join(" ")}</p>
@@ -438,6 +466,51 @@ export default function GirlfriendLetter() {
                             {isActive && <Caret />}
                           </motion.p>
                         )}
+
+                        {/* On phones the pictures live in the letter itself,
+                            between paragraphs, so nothing is ever covered. */}
+                        {photos
+                          .slice(photosBy(i - 1), photosBy(i))
+                          .map((photo) => (
+                            <motion.div
+                              key={photo.src}
+                              className="sm:hidden flex justify-center pt-7"
+                              initial={
+                                reduceMotion
+                                  ? { opacity: 0 }
+                                  : { opacity: 0, y: 60, scale: 0.85 }
+                              }
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              transition={
+                                reduceMotion
+                                  ? { duration: 0.5 }
+                                  : {
+                                      type: "spring",
+                                      stiffness: 90,
+                                      damping: 15,
+                                    }
+                              }
+                            >
+                              <motion.div
+                                initial={{ rotate: -2.5 }}
+                                animate={
+                                  reduceMotion
+                                    ? undefined
+                                    : { y: [0, -9, 0], rotate: [-2.5, 2.5, -2.5] }
+                                }
+                                transition={{
+                                  duration: 6,
+                                  repeat: Infinity,
+                                  ease: "easeInOut",
+                                }}
+                              >
+                                <PhotoFrame
+                                  photo={photo}
+                                  width="min(62vw, 260px)"
+                                />
+                              </motion.div>
+                            </motion.div>
+                          ))}
                       </motion.div>
                     );
                   },

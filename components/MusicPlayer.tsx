@@ -18,7 +18,7 @@ export default function MusicPlayer({ isPlaying }: Props) {
       <iframe
         width="100"
         height="100"
-        src={`https://www.youtube.com/embed/videoseries?list=${PLAYLIST_ID}&autoplay=1&loop=1&controls=1&modestbranding=1`}
+          src={`https://www.youtube.com/embed/videoseries?list=${PLAYLIST_ID}&autoplay=1&loop=1&controls=1&modestbranding=1&playsinline=1`}
         title="YouTube Music"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen

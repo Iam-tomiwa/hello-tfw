@@ -1,3 +1,12 @@
+/** A picture from public/our-pictures, with its intrinsic dimensions. */
+export interface Photo {
+  src: string;
+  width: number;
+  height: number;
+  /** Clips are served as muted looping video — far smaller than a GIF. */
+  kind: "image" | "video";
+}
+
 export interface Message {
   id: string;
   content: string;
