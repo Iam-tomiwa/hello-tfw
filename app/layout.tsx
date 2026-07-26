@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Playfair_Display, DM_Sans } from 'next/font/google'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import AppShell from '@/components/AppShell'
 import './globals.css'
 
 const playfair = Playfair_Display({
@@ -41,7 +42,7 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegister />
-        {children}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   )

@@ -3,12 +3,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, Music, Music2 } from "lucide-react";
-import WelcomeAnimation from "./WelcomeAnimation";
+import { Plus } from "lucide-react";
 import MessageGrid from "./MessageGrid";
 import PasscodeModal from "./PasscodeModal";
 import AddMessageModal from "./AddMessageModal";
-import MusicPlayer from "./MusicPlayer";
 import { Message } from "@/lib/types";
 
 interface Auth {
@@ -21,7 +19,6 @@ interface Props {
 }
 
 export default function MainClient({ initialMessages }: Props) {
-  const [showWelcome, setShowWelcome] = useState(true);
   const [showPasscode, setShowPasscode] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [auth, setAuth] = useState<Auth | null>(null);
@@ -31,7 +28,6 @@ export default function MainClient({ initialMessages }: Props) {
     Record<string, number>
   >({});
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
   // Restore session auth on mount
   useEffect(() => {
@@ -87,61 +83,9 @@ export default function MainClient({ initialMessages }: Props) {
 
   return (
     <div
-      className="min-h-screen max-w-screen overflow-x-hidden font-sans"
+      className="flex-1 max-w-screen overflow-x-hidden font-sans"
       style={{ background: "#fdf6f0" }}
     >
-      <AnimatePresence>
-        {showWelcome && (
-          <WelcomeAnimation onComplete={() => setShowWelcome(false)} />
-        )}
-      </AnimatePresence>
-
-      {/* Header */}
-      <header
-        className="sticky top-0 z-30 px-5 sm:px-10 py-4 flex items-center justify-between"
-        style={{
-          background: "rgba(253,246,240,0.88)",
-          backdropFilter: "blur(14px)",
-          borderBottom: "1px solid rgba(194,88,122,0.12)",
-        }}
-      >
-        <div>
-          <h1
-            className="font-serif text-lg font-semibold"
-            style={{ color: "#2d1b2e" }}
-          >
-            The Fiery Woman
-          </h1>
-          <p
-            className="text-[11px] font-sans tracking-wider"
-            style={{ color: "#a8729a" }}
-          >
-            your comfort corner 🌸
-          </p>
-        </div>
-        <motion.button
-          onClick={() => setIsMusicPlaying(!isMusicPlaying)}
-          className="p-2 rounded-full transition-colors relative"
-          style={{ color: isMusicPlaying ? "#c2587a" : "#edadc0" }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          aria-label={isMusicPlaying ? "Pause music" : "Play music"}
-        >
-          {isMusicPlaying ? (
-            <Music2 size={24} className="animate-pulse" />
-          ) : (
-            <Music size={24} />
-          )}
-          {isMusicPlaying && (
-            <motion.span
-              className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#c2587a]"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-            />
-          )}
-        </motion.button>
-      </header>
-
       {/* Main content */}
       <main className="px-5 sm:px-10 py-10 max-w-5xl mx-auto">
         <motion.div
@@ -170,8 +114,6 @@ export default function MainClient({ initialMessages }: Props) {
           onDelete={handleDelete}
         />
       </main>
-
-      <MusicPlayer isPlaying={isMusicPlaying} />
 
       {/* Floating add button */}
       <motion.button

@@ -1,14 +1,12 @@
-/* eslint-disable react-hooks/purity */
 "use client";
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Petals from "./Petals";
 
 interface Props {
   onComplete: () => void;
 }
-
-const PETALS = ["✿", "❀", "♡", "✦", "✧", "❋", "✾"];
 
 export default function WelcomeAnimation({ onComplete }: Props) {
   const [phase, setPhase] = useState(0);
@@ -34,27 +32,14 @@ export default function WelcomeAnimation({ onComplete }: Props) {
           transition={{ duration: 0.9, ease: "easeInOut" }}
         >
           {/* Floating petals */}
-          <div className="absolute inset-0 pointer-events-none">
-            {Array.from({ length: 14 }).map((_, i) => (
-              <motion.span
-                key={i}
-                className="absolute text-white/25 select-none"
-                style={{
-                  fontSize: `${16 + Math.random() * 18}px`,
-                  left: `${Math.random() * 100}%`,
-                }}
-                initial={{ y: "110vh", rotate: 0, opacity: 0 }}
-                animate={{ y: "-10vh", rotate: 360, opacity: [0, 0.7, 0] }}
-                transition={{
-                  duration: 5 + Math.random() * 3,
-                  delay: Math.random() * 2,
-                  ease: "linear",
-                }}
-              >
-                {PETALS[i % PETALS.length]}
-              </motion.span>
-            ))}
-          </div>
+          <Petals
+            color="rgba(255,255,255,0.25)"
+            minDuration={5}
+            durationRange={3}
+            maxDelay={2}
+            peakOpacity={0.7}
+            repeat={false}
+          />
 
           {/* Content */}
           <div className="text-center px-10 relative z-10">
