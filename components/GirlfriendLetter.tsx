@@ -14,6 +14,10 @@ type LineKind = "greeting" | "para" | "shoutout" | "finale";
 interface Line {
   kind: LineKind;
   text: string;
+  action?: {
+    url: string;
+    label: string;
+  };
 }
 
 const LETTER: Line[] = [
@@ -66,14 +70,22 @@ const LETTER: Line[] = [
   },
   {
     kind: "para",
-    text: "So in celebration of a girlfriend's day, I booked you a spa session to make you a bit softer  🌚 as you don dey kanra a little too much, and a basic skincare routine for your breakout.",
+    text: "So in celebration of a girlfriend's day, I want you to book a spa session using the link below (all expense paid) to make you a bit softer  🌚 cus e be like you don dey kanra a little too much",
+    action: {
+      url: "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0YcH653sLVVkJW2rTh3HcPgowy6gfsdeu8yLwZKCHFvu-imH-_48xhRshrTiEJkxhpp3b5Uijk",
+      label: "Book Your Spa Appointment 💆‍♀️✨",
+    },
+  },
+  {
+    kind: "para",
+    text: "Oh I also got you a basic skincare routine for your breakout... The soft babe agenda must agendddd. Happy girlfriend's day to those who celebrate 🙂‍↔️",
   },
   { kind: "finale", text: "I love you 3000 ❤️." },
 ];
 
-/** ~240 words per minute — an unhurried, typical reading pace. */
-const CHAR_MS = 45;
-const LINE_PAUSE_MS = 620;
+/** Slightly slower speed per char & pause for a more relaxed, handwritten reading pace. */
+const CHAR_MS = 65;
+const LINE_PAUSE_MS = 700;
 
 /** Split on grapheme clusters so emoji are never torn mid-reveal. */
 function toGraphemes(text: string): string[] {
@@ -418,13 +430,62 @@ export default function GirlfriendLetter({ photos }: Props) {
                         )}
 
                         {line.kind === "para" && (
-                          <p
-                            className="font-serif text-lg sm:text-xl leading-relaxed"
-                            style={{ color: "#2d1b2e" }}
-                          >
-                            {text}
-                            {isActive && <Caret />}
-                          </p>
+                          <div className="space-y-3">
+                            <p
+                              className="font-serif text-lg sm:text-xl leading-relaxed"
+                              style={{ color: "#2d1b2e" }}
+                            >
+                              {text}
+                              {isActive && <Caret />}
+                            </p>
+
+                            {line.action &&
+                              (i < lineIndex ||
+                                (isActive &&
+                                  charIndex >= graphemes[i].length)) && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  transition={{
+                                    duration: 0.5,
+                                    ease: "easeOut",
+                                  }}
+                                  className="pt-2 pb-1 flex justify-start sm:justify-center"
+                                >
+                                  <motion.a
+                                    href={line.action.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="group inline-flex items-center gap-3 px-6 py-3.5 rounded-full font-sans text-sm sm:text-base font-semibold text-white shadow-lg transition-shadow duration-300 hover:shadow-xl"
+                                    style={{
+                                      background:
+                                        "linear-gradient(135deg, #e0527b 0%, #b83b68 100%)",
+                                      boxShadow:
+                                        "0 8px 24px rgba(224, 82, 123, 0.35)",
+                                    }}
+                                  >
+                                    <span className="text-lg">💆‍♀️</span>
+                                    <span>{line.action.label}</span>
+                                    <svg
+                                      className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                      strokeWidth={2.5}
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                                      />
+                                    </svg>
+                                  </motion.a>
+                                </motion.div>
+                              )}
+                          </div>
                         )}
 
                         {line.kind === "shoutout" && (
@@ -496,7 +557,10 @@ export default function GirlfriendLetter({ photos }: Props) {
                                 animate={
                                   reduceMotion
                                     ? undefined
-                                    : { y: [0, -9, 0], rotate: [-2.5, 2.5, -2.5] }
+                                    : {
+                                        y: [0, -9, 0],
+                                        rotate: [-2.5, 2.5, -2.5],
+                                      }
                                 }
                                 transition={{
                                   duration: 6,
