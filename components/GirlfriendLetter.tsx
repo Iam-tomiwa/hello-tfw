@@ -38,7 +38,7 @@ const LETTER: Line[] = [
   { kind: "para", text: "Someone to pray with and pray over us." },
   {
     kind: "para",
-    text: "This is my reminder that, as God helps us, I will be that someone for you, holding your hands just as you hold mine, as we become true friends and a big part of our support system.",
+    text: "This is my reminder that, as God helps us, I will be that someone for you, holding your hands just as you hold mine, as we become true friends and a big part of each other's support system.",
   },
   {
     kind: "para",
