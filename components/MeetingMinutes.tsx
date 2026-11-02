@@ -10,7 +10,7 @@ type Phase = "sealed" | "opening" | "reading";
 
 const MEETING_NOTES = [
   "The prosecutor stated that for small issues, she’ll let the defendant know immediately that she’s pissed and won’t give him the silent treatment (na she talk am oo).",
-  "For bigger issues, however, she’ll take some time to process things and make the defendant “gboju kuro.” But that doesn’t stop the defendant from passing along information, asking for help, or occasionally throwing in the “Will you be my heaven baby?” question.",
+  "For bigger issues, however, she’ll take some time to process things and make the defendant “gboju kuro.”, while still staying accountable. But that doesn’t stop the defendant from passing along information, asking for help, or occasionally throwing in the “Will you be my heaven baby?” question.",
   "The defendant agreed and stated that he’ll ask questions directly to clarify his thoughts. If anything comes up or he needs support, he’ll ask rather than assume everything is on pause. If she doesn’t respond immediately, no wamm, nothing spoil.",
   "The defendant then proceeded to “absorb sense” from the prosecutor by kissing her forehead 🌚 before saying his goodbye.",
   "In summary, the defendant is genuinely sorry for everything he said on Monday. He said things, that he would take back if he could. He wants the prosecutor to know that he loves her so much and knows she loves him too. ❤️",
