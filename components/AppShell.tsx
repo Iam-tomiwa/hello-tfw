@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import AppHeader from "./AppHeader";
 import MusicPlayer from "./MusicPlayer";
@@ -15,6 +16,7 @@ import { MusicContext, type MusicControls } from "./MusicContext";
 export default function AppShell({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const pathname = usePathname();
   const [showWelcome, setShowWelcome] = useState(true);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
@@ -33,11 +35,18 @@ export default function AppShell({
         {showWelcome && <WelcomeAnimation onComplete={handleWelcomeComplete} />}
       </AnimatePresence>
 
-      <AppHeader isMusicPlaying={isMusicPlaying} onToggleMusic={toggleMusic} />
+      <AppHeader
+        pathname={pathname}
+        isMusicPlaying={isMusicPlaying}
+        onToggleMusic={toggleMusic}
+      />
 
       {children}
 
-      <MusicPlayer isPlaying={isMusicPlaying} />
+      <MusicPlayer
+        isPlaying={isMusicPlaying}
+        videoId={pathname === "/the-commitment" ? "bC6YppytmP0" : undefined}
+      />
     </MusicContext.Provider>
   );
 }
