@@ -26,8 +26,8 @@ const REASONS = [
     body: "Like, really smart. It’s not every day you come across that combination in a woman. God willing, our children will benefit a lot from that combo. ❤️",
   },
   {
-    title: "Jumoke is a good friend.",
-    body: "I’ve seen how much you’ve shown up for Bisola when you were not even close at the beginning, for Eunice, and for me (I’ll always refer to the parfait situation last year - btw sugar mummy, come and buy parfait for me 🌚). I love that I can easily vibe with you, laugh with you, and talk about things without any of it feeling forced.",
+    title: "Jumoke is a good friend and a good person.",
+    body: "I cannot overemphasize this enough if I wanted to. I’ve seen how much you’ve shown up for Bisola when you were not even close at the beginning, for Eunice, and for me (I’ll always refer to the parfait situation last year - btw sugar mummy, come and buy parfait for me 🌚). I love that I can easily vibe with you, laugh with you, and talk about things without any of it feeling forced.",
   },
   {
     title: "Jumoke is not always nice, but she’s kind at heart.",
@@ -582,7 +582,7 @@ export default function MeetingMinutes() {
                 style={{ borderColor: "rgba(194,88,122,0.15)" }}
               >
                 <p className="font-serif text-lg" style={{ color: "#9b3a5e" }}>
-                  With love, always <span aria-hidden="true">♡</span>
+                  I love you 3,000 <span aria-hidden="true">♡</span>
                 </p>
                 <button
                   type="button"
