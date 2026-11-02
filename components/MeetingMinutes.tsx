@@ -35,7 +35,7 @@ const REASONS = [
   },
   {
     title: "Jumoke is reliable.",
-    body: "I remember our conversation about our wedding and how you told me it wasn’t something I had to do alone.",
+    body: "I remember our conversation about our wedding and how you told me it wasn’t something I had to do alone. I've seen how reliable you are with your friends and family. I know I can count on you to be there for me when I need you.",
   },
   {
     title: "Jumoke is not tardy",
