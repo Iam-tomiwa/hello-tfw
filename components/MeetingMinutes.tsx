@@ -553,8 +553,9 @@ export default function MeetingMinutes() {
                     disappointment when they aren’t communicated properly.
                   </BodyCopy>
                   <BodyCopy>
-                    And sometimes, it takes repeated reminders for us to realise
-                    just how important certain things truly are to each other.
+                    And sometimes (at least to me), it takes repeated reminders
+                    for us to realise just how important certain things truly
+                    are to each other.
                   </BodyCopy>
                   <BodyCopy>
                     I&apos;d love for us to talk about these expectations,
